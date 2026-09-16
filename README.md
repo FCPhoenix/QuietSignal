@@ -5,8 +5,8 @@ sensors, and alerts a designated family member — in plain language — only
 when the *pattern itself* breaks, not when a single event happens. It watches
 the routine, never the person.
 
-Built for the **Build, Ship, Shape: Amazon Developer Hackathon** (Ring track).
-Full spec: [docs/PRD.md](docs/PRD.md).
+Built for a developer hackathon (Ring track — caretaking / IoT home
+automation). Full spec: [docs/PRD.md](docs/PRD.md).
 
 ## Product principles
 
