@@ -1,6 +1,8 @@
 import type { SensorEvent } from "@/lib/events/types";
 import { loadConfig } from "@/lib/config";
 import { generateSyntheticHistory } from "@/lib/ingestion/syntheticGenerator";
+import { createRingClient } from "@/lib/ingestion/ringClient";
+import { getRingAuthMode } from "@/lib/ingestion/ringAuth";
 
 /**
  * Single entry point the rest of the app calls for events — it never needs
@@ -11,11 +13,16 @@ export async function getRecentEvents(): Promise<SensorEvent[]> {
 
   switch (config.ingestionMode) {
     case "ring-api":
-    case "ring-simulator":
-      // TODO(Days 1-3 spike): wire src/lib/ingestion/ringClient.ts here
-      // once Ring developer access is confirmed. Falling back to synthetic
-      // for now so the rest of the pipeline is never blocked on it.
-      return generateSyntheticHistory({ days: config.rollingWindowDays });
+    case "ring-simulator": {
+      if (!getRingAuthMode()) {
+        // No credentials yet - fall back rather than block the rest of the
+        // pipeline (PRD §9 risk mitigation: disclosed synthetic fallback).
+        return generateSyntheticHistory({ days: config.rollingWindowDays });
+      }
+      const client = createRingClient();
+      const sinceIso = new Date(Date.now() - config.rollingWindowDays * 24 * 60 * 60 * 1000).toISOString();
+      return client.pollEvents(sinceIso);
+    }
     case "synthetic":
     default:
       return generateSyntheticHistory({ days: config.rollingWindowDays });
