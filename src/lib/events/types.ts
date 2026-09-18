@@ -1,7 +1,7 @@
 /**
- * Normalized event schema (FR-1.2). Every ingestion mode (real Ring API,
- * Ring simulator, or the synthetic generator) must produce these shapes so
- * the baseline engine and break detector never know which mode fed them.
+ * Every ingestion mode (real Ring API, Ring simulator, or the synthetic
+ * generator) produces this shape, so the baseline engine and break
+ * detector never need to know which mode fed them.
  */
 
 export type SensorType = "motion" | "contact" | "doorbell";
@@ -21,8 +21,8 @@ export interface SensorEvent {
 }
 
 /**
- * Ingestion must record connectivity gaps rather than silently treating
- * "no events" as "no activity" (FR-1.3).
+ * A connectivity gap, recorded rather than silently treated as "no
+ * activity" when a sensor drops offline.
  */
 export interface GapInterval {
   sensorId: string;

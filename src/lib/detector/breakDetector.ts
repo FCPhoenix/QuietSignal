@@ -1,10 +1,10 @@
 /**
- * Break detector (FR-3). Evaluates the current state against the household
- * baseline and emits scored break candidates with evidence. Never a naked
- * number (FR-3.2) — every candidate carries the anchor, the deviation, and
- * the confidence it was judged against.
+ * Evaluates the current state against the household baseline and emits
+ * scored break candidates with evidence. Never a naked number: every
+ * candidate carries the anchor, the deviation, and the confidence it was
+ * judged against.
  *
- * Hysteresis (FR-3.3): pass the previous evaluation's candidates back in via
+ * Hysteresis: pass the previous evaluation's candidates back in via
  * `previousCandidates` so `firstDetectedAt` persists across calls and a
  * candidate only becomes `confirmed` once it has outlasted the confirmation
  * window. A single call with no history behaves as a fresh detection.
@@ -62,7 +62,7 @@ function detectAbsenceBreak(
   config: QuietSignalConfig,
 ): BreakCandidate | null {
   const anchor = baseline.anchors.find((a) => a.label === "first-activity" && a.scope === "household");
-  if (!anchor || anchor.confidence === "learning") return null; // FR-2.4: never alert while learning
+  if (!anchor || anchor.confidence === "learning") return null; // never alert while still learning the routine
 
   const cutoff = anchor.meanMinuteOfDay + anchor.stdDevMinutes * toleranceMultiplier(config.tolerance);
   const nowMinute = minuteOfDay(now);
@@ -190,7 +190,7 @@ export function detectBreaks(
   if (silence) fresh.push(silence);
 
   // Carry forward firstDetectedAt from any matching previous candidate so
-  // hysteresis (FR-3.3) works across repeated evaluations.
+  // hysteresis works across repeated evaluations.
   const confirmationMs = config.confirmationPeriodMinutes * 60_000;
   return fresh.map((candidate) => {
     const prior = previousCandidates.find((p) => p.id === candidate.id);

@@ -1,9 +1,8 @@
 /**
- * Event store (§6.2) — append-only, per-sensor, plus gap intervals and
- * acknowledged check-ins. This in-memory implementation is enough to drive
- * the baseline engine and break detector during the hackathon build; swap
- * the `EventStore` interface for a DynamoDB-backed one for the AWS Builder
- * deployment without touching any caller.
+ * Append-only event store, plus gap intervals and acknowledged check-ins.
+ * This in-memory implementation is enough to drive the baseline engine and
+ * break detector; swap the `EventStore` interface for a DynamoDB-backed one
+ * for a real deployment without touching any caller.
  */
 
 import type { CheckIn, GapInterval, SensorEvent } from "@/lib/events/types";

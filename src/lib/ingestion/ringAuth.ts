@@ -6,7 +6,7 @@
  * Two modes:
  * 1. `RING_ACCESS_TOKEN` — a short-lived (~30 min) token from the Ring
  *    Developer Playground (developer.amazon.com/ring/console/playground).
- *    Fastest path for the Days 1-3 spike: no app registration needed.
+ *    Fastest path to get running: no app registration needed.
  * 2. `RING_REFRESH_TOKEN` + `RING_CLIENT_ID` + `RING_CLIENT_SECRET` — the
  *    production OAuth flow, auto-renewing.
  */

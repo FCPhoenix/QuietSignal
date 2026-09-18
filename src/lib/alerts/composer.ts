@@ -1,8 +1,7 @@
 /**
- * Alert composer (FR-4). Calls Bedrock with a locked prompt template plus
- * structured evidence JSON. The LLM only chooses phrasing — every fact in
- * its output must trace back to `candidate.evidence`/`reasons` (§6 data
- * flow principle; PRD §9 risk: "LLM hallucinating alert facts").
+ * Calls Bedrock with a locked prompt template plus structured evidence
+ * JSON. The LLM only chooses phrasing; every fact in its output must trace
+ * back to `candidate.evidence`/`reasons`.
  */
 
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";

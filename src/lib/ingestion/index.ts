@@ -5,8 +5,8 @@ import { createRingClient } from "@/lib/ingestion/ringClient";
 import { getRingAuthMode } from "@/lib/ingestion/ringAuth";
 
 /**
- * Single entry point the rest of the app calls for events — it never needs
- * to know whether they came from Ring or the synthetic generator (FR-1.1).
+ * Single entry point the rest of the app calls for events; it never needs
+ * to know whether they came from Ring or the synthetic generator.
  */
 export async function getRecentEvents(): Promise<SensorEvent[]> {
   const config = loadConfig();
@@ -15,8 +15,7 @@ export async function getRecentEvents(): Promise<SensorEvent[]> {
     case "ring-api":
     case "ring-simulator": {
       if (!getRingAuthMode()) {
-        // No credentials yet - fall back rather than block the rest of the
-        // pipeline (PRD §9 risk mitigation: disclosed synthetic fallback).
+        // No credentials yet - fall back rather than block the rest of the pipeline.
         return generateSyntheticHistory({ days: config.rollingWindowDays });
       }
       const client = createRingClient();

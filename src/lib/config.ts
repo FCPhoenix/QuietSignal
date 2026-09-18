@@ -1,19 +1,14 @@
-/**
- * Central runtime config (FR-6.1). All tunables come from env so the
- * hackathon demo and a real deployment share one code path.
- */
-
 export type IngestionMode = "ring-api" | "ring-simulator" | "synthetic";
 
 export interface QuietSignalConfig {
   ingestionMode: IngestionMode;
   timezone: string;
-  rollingWindowDays: number; // FR-2.1, default 21, tunable 7-35
-  confirmationPeriodMinutes: number; // FR-3.3, default 15-30
+  rollingWindowDays: number;
+  confirmationPeriodMinutes: number;
   quietHoursStart: string; // "HH:mm"
   quietHoursEnd: string;
   tolerance: "lenient" | "balanced" | "strict";
-  demoMode: boolean; // FR-6.2
+  demoMode: boolean;
 }
 
 function envInt(name: string, fallback: number): number {

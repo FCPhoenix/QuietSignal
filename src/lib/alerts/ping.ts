@@ -1,7 +1,6 @@
 /**
- * Minimal Bedrock connectivity check for the Days 1-3 spike (docs/PRD.md
- * §10: "validate Bedrock access"). Sends the smallest possible request and
- * reports whether the credentials/model/region are actually reachable,
+ * Minimal Bedrock connectivity check. Sends the smallest possible request
+ * and reports whether the credentials/model/region are actually reachable,
  * rather than waiting to find out during real alert composition.
  */
 

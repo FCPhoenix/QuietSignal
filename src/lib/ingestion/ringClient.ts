@@ -1,9 +1,8 @@
 /**
- * Ring Partner API client (FR-1.1, Modes A & B). Endpoints and response
- * shapes confirmed against Amazon's own reference implementation
- * (github.com/AmazonAppDev/ring-api-helloworld) during the Days 1-3 spike
- * (docs/PRD.md §10) — see docs/SPIKE_DAY1-3.md for what that spike found
- * and the one open risk it surfaced.
+ * Ring Partner API client. Endpoints and response shapes confirmed against
+ * Amazon's own reference implementation (github.com/AmazonAppDev/ring-api-helloworld).
+ * See docs/SPIKE_DAY1-3.md for what that spike found and the one open risk
+ * it surfaced.
  *
  * IMPORTANT: the Partner API has no polling endpoint for live events - Ring
  * delivers those via webhook (see src/lib/ingestion/ringWebhook.ts and
@@ -89,7 +88,7 @@ export async function getDeviceEventHistory(
  * Maps Ring's event vocabulary to ours. Only motion and doorbell events are
  * confirmed to exist on this API (see docs/SPIKE_DAY1-3.md) - there is no
  * observed "contact sensor open/close" event type, which is a real risk
- * against product goal #3 (zero camera dependency, motion + contact only).
+ * against the zero-camera-dependency requirement (motion + contact only).
  */
 function mapRingEventType(ringEventType: string): { sensorType: SensorType; eventType: SensorEvent["eventType"] } | null {
   if (ringEventType.startsWith("motion")) return { sensorType: "motion", eventType: "motion-detected" };

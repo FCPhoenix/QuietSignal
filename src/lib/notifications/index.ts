@@ -1,8 +1,8 @@
 /**
- * Notification layer (FR-4.2, FR-5). Two legs for the demo: in-app (the
- * Active break conversation view reads directly from the event/alert store)
- * and email via SES. Alerts are deduplicated per break — this module
- * upserts one conversation per breakId rather than firing repeat pings.
+ * Two notification legs: in-app (the break conversation view reads directly
+ * from the store here) and email via SES. Alerts are deduplicated per
+ * break: this module upserts one conversation per breakId rather than
+ * firing repeat pings.
  */
 
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";

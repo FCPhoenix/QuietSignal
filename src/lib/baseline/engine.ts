@@ -1,10 +1,10 @@
 /**
- * Baseline engine (FR-2). Pure deterministic statistics — no LLM calls here
- * by design (§6 data flow principle: statistics decide *whether*, the LLM
- * only decides *how to say it*).
+ * Pure deterministic statistics, no LLM calls here by design: statistics
+ * decide whether to alert, the LLM only decides how to phrase it.
  *
  * Builds per-time-of-day anchor routines from raw events and scores how
- * confident we are in each one, which gates alerting (FR-2.3, FR-2.4).
+ * confident we are in each one, which gates alerting until the household
+ * is actually understood.
  */
 
 import type { SensorEvent } from "@/lib/events/types";
@@ -73,10 +73,10 @@ const MEAL_WINDOWS: Array<{ label: string; startMinute: number; endMinute: numbe
 ];
 
 /**
- * Builds household anchor routines (FR-2.2) from a rolling window of events
- * (FR-2.1). Anchors: first/last activity of the day (household-wide), meal
- * windows (from any "kitchen"-labeled sensor), and per-sensor first event of
- * day for every other sensor (captures door/delivery patterns generically).
+ * Builds household anchor routines from a rolling window of events:
+ * first/last activity of the day (household-wide), meal windows (from any
+ * "kitchen"-labeled sensor), and per-sensor first event of day for every
+ * other sensor (captures door/delivery patterns generically).
  */
 export function buildBaseline(events: SensorEvent[], windowDays: number): HouseholdBaseline {
   const byDay = new Map<string, SensorEvent[]>();

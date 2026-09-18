@@ -28,3 +28,30 @@ snag, with the tool/service involved and how it was resolved (or not).
   the product's "no cameras, motion + contact sensors only" principle, and
   needs a direct check against a real device inventory before Day 4.
   Details and the fallback options are in `docs/SPIKE_DAY1-3.md`.
+- Update (same day): ran `/api/spike` against a real Ring Playground
+  token. Auth and device listing both worked. The account has exactly one
+  device, "Playground Device", with an empty `capabilities` list, which is
+  a sandbox placeholder rather than real hardware. The contact-sensor
+  question above is still open and needs a real linked device to answer.
+
+## 2026-09-18 — Days 4-10 core engine
+
+- Built the third scripted break scenario (sequence break) and an
+  automated test suite (`tests/acceptance.test.ts`, vitest) that checks
+  the PRD's own §8 metrics (M1-M5) against the real baseline engine and
+  break detector, not mocks.
+- Bug the tests caught immediately: the synthetic generator's door-open
+  events had no guaranteed follow-up motion, so an ordinary delivery could
+  randomly trigger a false "sequence break" on an otherwise benign day.
+  Fixed by always generating a follow-up interior-motion event a few
+  minutes after every door-open, matching what actually happens when
+  someone answers the door.
+- Second bug, found by hand while re-testing the live demo page after the
+  suite was green: the Watcher home screen's demo mode used the real
+  wall-clock time to decide whether the household's first activity was
+  "late yet". That made the scripted incident only visible during certain
+  hours of the day, which violates FR-6.2 ("demo mode... reproducible
+  without waiting"). Fixed by pinning demo mode's evaluation time to late
+  in the current calendar day, regardless of when the page is actually
+  loaded.
+- Both fixes are covered by the test suite now (`npm run test`).

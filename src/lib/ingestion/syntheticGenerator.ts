@@ -1,9 +1,8 @@
 /**
- * Synthetic event generator — Mode C ingestion (FR-1.1) and the backbone of
- * demo mode (FR-6.2). Produces a realistic, seeded household schedule so the
- * baseline engine and break detector can be built and demoed without waiting
- * on real sensor history. Also used as the fallback if Ring API/simulator
- * access (Open Question #1) doesn't land in time.
+ * Synthetic event generator, the backbone of demo mode. Produces a
+ * realistic, seeded household schedule so the baseline engine and break
+ * detector can be built and demoed without waiting on real sensor history.
+ * Also used as the fallback when Ring API/simulator access isn't set up.
  */
 
 import type { SensorEvent, SensorType, SensorEventType } from "@/lib/events/types";
@@ -68,14 +67,14 @@ export interface GenerateHistoryOptions {
   startDate?: Date;
   seed?: number;
   sensors?: HouseholdSensor[];
-  /** Omit specific anchor labels on specific 0-indexed days to script an incident (FR-6.2). */
+  /** Omit specific anchor labels on specific 0-indexed days to script an incident. */
   suppressedAnchors?: Record<number, string[]>;
 }
 
 /**
  * Generates `days` of household activity ending at `startDate` (default:
  * today), day-of-week aware, with random jitter so the baseline engine has
- * real variance to learn from (FR-2.1).
+ * real variance to learn from.
  */
 export function generateSyntheticHistory(options: GenerateHistoryOptions): SensorEvent[] {
   const { days, startDate = new Date(), seed = 42, suppressedAnchors = {} } = options;
@@ -107,7 +106,10 @@ export function generateSyntheticHistory(options: GenerateHistoryOptions): Senso
         timestamp: timestamp.toISOString(),
       });
 
-      // A door-open is followed by a close a few minutes later.
+      // A door-open is followed by a close a few minutes later, and by
+      // someone walking back inside - without this, every ordinary
+      // delivery would look like a "sequence break" (door opened, nobody
+      // came in) to the detector, which is not a break, just a normal day.
       if (anchor.eventType === "open") {
         const closeTs = new Date(timestamp.getTime() + (2 + Math.floor(rand() * 6)) * 60_000);
         events.push({
@@ -116,6 +118,15 @@ export function generateSyntheticHistory(options: GenerateHistoryOptions): Senso
           locationLabel: anchor.sensorId.replace(/^contact-/, ""),
           eventType: "close",
           timestamp: closeTs.toISOString(),
+        });
+
+        const followUpMotionTs = new Date(timestamp.getTime() + (3 + Math.floor(rand() * 4)) * 60_000);
+        events.push({
+          sensorId: "motion-living-room",
+          sensorType: "motion",
+          locationLabel: "living-room",
+          eventType: "motion-detected",
+          timestamp: followUpMotionTs.toISOString(),
         });
       }
     }
@@ -126,27 +137,26 @@ export function generateSyntheticHistory(options: GenerateHistoryOptions): Senso
 
 /**
  * Scripted incident: a normal history, then a final day with zero activity
- * past the household's usual first-activity time — the "absence break"
- * scenario from PRD §8 M2 (scripted break scenario #1). Suppresses every
- * anchor on the final day.
+ * past the household's usual first-activity time, the "absence break"
+ * scenario. Suppresses every anchor on the final day.
  */
-export function generateScriptedAbsenceIncident(historyDays = 21, seed = 42): SensorEvent[] {
+export function generateScriptedAbsenceIncident(historyDays = 21, seed = 42, startDate: Date = new Date()): SensorEvent[] {
   const suppressFrom = ["wake", "breakfast", "mail-or-delivery", "lunch", "afternoon", "dinner", "last-activity"];
   return generateSyntheticHistory({
     days: historyDays,
     seed,
+    startDate,
     suppressedAnchors: { [historyDays - 1]: suppressFrom },
   });
 }
 
 /**
  * Scripted incident: front door opens repeatedly overnight with no baseline
- * for that hour — the "nocturnal anomaly" scenario (FR-3.1).
+ * for that hour, the "nocturnal anomaly" scenario.
  */
-export function generateScriptedNocturnalIncident(historyDays = 21, seed = 42): SensorEvent[] {
-  const base = generateSyntheticHistory({ days: historyDays, seed });
-  const lastDay = new Date();
-  lastDay.setUTCDate(lastDay.getUTCDate() - 0);
+export function generateScriptedNocturnalIncident(historyDays = 21, seed = 42, startDate: Date = new Date()): SensorEvent[] {
+  const base = generateSyntheticHistory({ days: historyDays, seed, startDate });
+  const lastDay = new Date(startDate);
   lastDay.setUTCHours(0, 0, 0, 0);
 
   const nocturnalEvents: SensorEvent[] = [1, 2, 3].map((i) => ({
@@ -158,4 +168,48 @@ export function generateScriptedNocturnalIncident(historyDays = 21, seed = 42): 
   }));
 
   return [...base, ...nocturnalEvents].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+}
+
+/**
+ * Scripted incident: an otherwise normal day, but one front-door open with
+ * no interior motion in the following 10 minutes, the "sequence break"
+ * scenario. The injected door event sits at 09:30, clear of every anchor's
+ * time window, so it cannot collide with a routine event that would mask
+ * the break.
+ */
+export function generateScriptedSequenceBreakIncident(historyDays = 21, seed = 42, startDate: Date = new Date()): SensorEvent[] {
+  const base = generateSyntheticHistory({ days: historyDays, seed, startDate });
+  const lastDay = new Date(startDate);
+  lastDay.setUTCHours(0, 0, 0, 0);
+  const lastDayKey = lastDay.toISOString().slice(0, 10);
+
+  const doorOpenTime = atMinute(lastDay, 9 * 60 + 30); // 09:30 - clear of every anchor window
+  const windowEnd = new Date(doorOpenTime.getTime() + 10 * 60_000);
+
+  // Guarantee the window is truly empty on this one day, even if a jittered
+  // anchor happened to land nearby.
+  const withoutCollisions = base.filter((event) => {
+    if (event.timestamp.slice(0, 10) !== lastDayKey) return true;
+    const t = new Date(event.timestamp);
+    return t < doorOpenTime || t > windowEnd;
+  });
+
+  const doorEvents: SensorEvent[] = [
+    {
+      sensorId: "contact-front-door",
+      sensorType: "contact",
+      locationLabel: "front-door",
+      eventType: "open",
+      timestamp: doorOpenTime.toISOString(),
+    },
+    {
+      sensorId: "contact-front-door",
+      sensorType: "contact",
+      locationLabel: "front-door",
+      eventType: "close",
+      timestamp: new Date(doorOpenTime.getTime() + 3 * 60_000).toISOString(),
+    },
+  ];
+
+  return [...withoutCollisions, ...doorEvents].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 }

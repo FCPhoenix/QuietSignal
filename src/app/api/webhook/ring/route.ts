@@ -4,9 +4,9 @@ import { getEventStore } from "@/lib/eventStore";
 
 /**
  * Receives real-time Ring webhook events and appends them to the event
- * store (FR-1.1 Mode A/B). This is the live path - the Partner API has no
- * polling endpoint for events, only a per-device history lookup (used for
- * backfill in src/lib/ingestion/ringClient.ts).
+ * store. This is the live path - the Partner API has no polling endpoint
+ * for events, only a per-device history lookup (used for backfill in
+ * src/lib/ingestion/ringClient.ts).
  *
  * Configure your Ring webhook to POST here. If RING_WEBHOOK_SECRET is set,
  * requests must carry it as a Bearer token.

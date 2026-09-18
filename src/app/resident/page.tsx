@@ -4,10 +4,9 @@ import { evaluateHousehold } from "@/lib/pipeline";
 export const dynamic = "force-dynamic";
 
 /**
- * Resident transparency view (FR-5.3, product principle P2). Large type,
- * plain language, no jargon — this is the Resident's page, not the
- * Watcher's. It must always be reachable and always tell the truth about
- * what the system knows.
+ * Resident transparency view. Large type, plain language, no jargon, this
+ * is the Resident's page, not the Watcher's. It must always be reachable
+ * and always tell the truth about what the system knows.
  */
 export default async function ResidentView() {
   const { baseline } = await evaluateHousehold();

@@ -5,10 +5,10 @@ import { getEventStore } from "@/lib/eventStore";
 import { pingBedrock } from "@/lib/alerts/ping";
 
 /**
- * The Days 1-3 spike's "kill-or-commit" check (docs/PRD.md §10), as a
- * runnable endpoint instead of a one-off script: validates Ring API access,
- * exercises the minimal event -> store -> query loop, and validates Bedrock
- * access. Hit this after filling in .env.local with real credentials.
+ * A "kill-or-commit" connectivity check, as a runnable endpoint instead of
+ * a one-off script: validates Ring API access, exercises the minimal
+ * event -> store -> query loop, and validates Bedrock access. Hit this
+ * after filling in .env.local with real credentials.
  *
  * GET /api/spike
  */
@@ -56,7 +56,7 @@ export async function GET() {
   const decision =
     (result.ring as { ok?: boolean } | undefined)?.ok && (result.bedrock as { ok?: boolean } | undefined)?.ok
       ? "proceed"
-      : "not yet - fill in missing credentials above, or fall back to synthetic-only ingestion (disclosed) per docs/PRD.md §9";
+      : "not yet - fill in missing credentials above, or fall back to synthetic-only ingestion (disclosed)";
 
   return NextResponse.json({ ...result, decision });
 }
